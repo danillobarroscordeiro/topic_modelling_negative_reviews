@@ -1,0 +1,52 @@
+{
+  "profile_name": "dbcordeiro_projects",
+  "lambda_endpoint": "https://dk5nrp46w2af4blzrctvyuqvfe0lgmhz.lambda-url.us-east-1.on.aws/",
+  "inference_endpoint": "topic-modelling-reviews-endpoint-test",
+  "s3_bucket": "s3://topic-modelling-reviews",
+  "s3_data_preprocessed_path": "s3://topic-modelling-reviews/data/preprocessed_reviews",
+  "embedding_model_path": "/opt/ml/code/sentence_transformers/all-MiniLM-L6-v2",
+  "role": "arn:aws:iam::513734873949:role/service-role/AmazonSageMaker-ExecutionRole-20240209T185677",
+  "image_uri_model": "513734873949.dkr.ecr.us-east-1.amazonaws.com/topic_modelling_reviews_model:latest",
+  "image_uri_inference": "513734873949.dkr.ecr.us-east-1.amazonaws.com/topic_modelling_reviews_deploy:latest",
+  "aws_region": "us-east-1",
+  "database": "amazon_reviews_db",
+  "raw_table": "raw_dataset",
+  "reviews_rating": 3,
+  "preprocessed_review_table": "preprocessed_reviews",
+  "products_metadata_table": "products_metadata",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "na_values": ["na", "NA", "nah", "NAH", "n/a", "N/A", "None", "none", "no", "NONE", "NO"],
+  "min_review_length": 20,
+  "max_review_length": 4500000,
+  "polarity": -0.2,
+  "words_to_remove": [
+    "star", "stars", "nt", "one", "two", "three", "n\\'t", "doesnt", "dont", 
+    "didnt", "wasnt", "werent", "wouldnt", "couldnt", "shouldnt", "havent", 
+    "hasnt", "hadnt", "aint"
+  ],
+  "token_ent_type": ["ORG", "PRODUCT", "CARDINAL", "DATE"],
+  "token_dep": ["amod", "advmod", "neg", "advcl"],
+  "token_head_pos": ["NOUN", "ADJ", "VERB"],
+  "umap_model": {
+    "n_neighbors": 25,
+    "n_components": 3,
+    "min_dist": 0.1,
+    "metric": "cosine",
+    "random_state": 42
+  },
+  "hdbscan_model": {
+    "min_cluster_size": 70,
+    "gen_min_span_tree": true,
+    "prediction_data": true
+  },
+  "vectorizer_model": {
+    "ngram_range": [1, 3],
+    "lowercase": true
+  },
+  "representation_model": {
+    "diversity": 0.8
+  },
+  "batch_size": 15000,
+  "top_n_words": 10,
+  "min_similarity": 1
+}

@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "preprocessing_data"
+version = "0.1.0"
+description = ""
+authors = ["dbcordeiro <danillo_barros@live.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+sentence-transformers = "^3.0.1"
+boto3 = "^1.34.139"
+pandas = "^2.2.2"
+swifter = "^1.4.0"
+textblob = "^0.18.0"
+scikit-learn = "^1.5.1"
+awswrangler = "^3.8.0"
+deep-translator = "^1.11.4"
+langdetect = "^1.0.9"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
