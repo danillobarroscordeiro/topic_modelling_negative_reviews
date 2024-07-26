@@ -27,6 +27,7 @@ def define_nlp(
     max_review_length: int = variable_hyperparam['max_review_length'], 
     disable: List[str] = ['lemmatizer']
 ):
+
     nlp = spacy.load("en_core_web_sm", disable=disable)
     nlp.max_length = max_review_length
     return nlp
@@ -63,7 +64,7 @@ def define_umap(
     n_components: int = variable_hyperparam['umap_model']['n_components'], 
     min_dist: int = variable_hyperparam['umap_model']['min_dist'], 
     metric: str = variable_hyperparam['umap_model']['metric'], 
-    random_state: int = variable_hyperparam['random_state']
+    random_state: int = variable_hyperparam['umap_model']['random_state']
 ):
 
     umap_model = UMAP(
@@ -73,7 +74,7 @@ def define_umap(
         metric=metric,
         random_state=random_state
     )
-    
+
     return umap_model
 
 
@@ -88,21 +89,19 @@ def define_hdbscan(
         gen_min_span_tree=gen_min_span_tree,
         prediction_data=prediction_data
     )
-    
+
     return hdbscan_model
 
 
 def define_vectorizer_tokenizer(
     nlp, ngram_range: tuple = variable_hyperparam['vectorizer_model']['ngram_range'], 
-    lowercase: bool = variable_hyperparam['vectorizer_model']['lowercase'], 
-    stop_words: str = 'english'
+    lowercase: bool = variable_hyperparam['vectorizer_model']['lowercase']
 ):
 
     vectorizer_model = CountVectorizer(
         tokenizer= lambda doc: spacy_tokenizer(nlp(doc)),
         ngram_range = ngram_range,
-        lowercase= lowercase,
-        stop_words= stop_words
+        lowercase= lowercase
     )
     
     return vectorizer_model
@@ -125,8 +124,8 @@ def train(
         nr_topics: str = 'auto', calculate_probabilities: bool = True,
         language: str = 'english', review_column: str = 'title_text_review',
         embeddings_columns: str = 'embeddings',
-        batch_size: int = 15000,
-        min_similarity: float = 1
+        batch_size: int = variable_hyperparam['batch_size'],
+        min_similarity: float = variable_hyperparam['min_similarity']
     ):
 
     topic_models = []
@@ -147,7 +146,7 @@ def train(
 
         topic_models.append(topic_model_i)
 
-    merged_model = BERTopic.merge_models(topic_models, min_similarity=1)
+    merged_model = BERTopic.merge_models(topic_models, min_similarity=min_similarity)
 
     # topic_model = BERTopic(
     #     embedding_model=embedding_model,
@@ -174,7 +173,7 @@ if __name__ == '__main__':
     parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--n-neighbors', type=int, default=20)
     parser.add_argument('--n-components', type=int, default=3)
-    parser.add_argument('--min-dist', type=float, default=0)
+    parser.add_argument('--min-dist', type=float, default=0.1)
     parser.add_argument('--metric', type=str, default='cosine')
     parser.add_argument('--random-state', type=int, default=42)
     parser.add_argument('--min-cluster-size', type=int, default=70)
@@ -186,14 +185,10 @@ if __name__ == '__main__':
 
     nlp = define_nlp()
     words_to_remove(nlp=nlp, words_to_remove=words_to_remove)
-    umap_model = define_umap(
-        n_neighbors=args.n_neighbors, 
-        n_components=args.n_components, 
-        min_dist=args.min_dist
-    )
-    hdbscan_model = define_hdbscan(min_cluster_size=args.min_cluster_size)
+    umap_model = define_umap()
+    hdbscan_model = define_hdbscan()
     vectorizer_model = define_vectorizer_tokenizer(nlp=nlp)
-    representation_model = define_representation_model(diversity=args.diversity)
+    representation_model = define_representation_model()
     
     train(
         df, embedding_model=embedding_model, umap_model=umap_model, 
