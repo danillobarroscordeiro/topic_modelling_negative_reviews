@@ -8,7 +8,7 @@ from sagemaker.model import Model
 import re
 import json
 
-with open('variable_hyperparam.json', 'r') as file:
+with open('../variable_hyperparam.json', 'r') as file:
     variable_hyperparam = json.load(file)
 
 SESSION: str = boto3.Session(

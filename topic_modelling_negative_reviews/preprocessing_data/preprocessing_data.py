@@ -144,7 +144,7 @@ def remove_reviews_emoji(
     review_column: str = 'title_text_review', 
     regex_mask: str = r"[^\x00-\x7F]+"
 ) -> pd.DataFrame:
-    df[review_column] = df[review_column].apply(lambda x: re.sub(regex_mask, '', x))
+    df[review_column] = df[review_column].swifter.apply(lambda x: re.sub(regex_mask, '', x))
 
     return df
 
