@@ -52,7 +52,8 @@ def spacy_tokenizer(
         and token.head.pos_ in token_head_pos
     ]
 
-def words_to_remove(nlp, words_to_remove: List[str] = variable_hyperparam['words_to_remove']): 
+def words_to_remove(nlp, words_to_remove: List[str] = variable_hyperparam['words_to_remove']):
+
     for i in words_to_remove:
         nlp.Defaults.stop_words.add(i)
     
@@ -184,7 +185,7 @@ if __name__ == '__main__':
     df = pd.read_parquet(args.input_data)
 
     nlp = define_nlp()
-    words_to_remove(nlp=nlp, words_to_remove=words_to_remove)
+    words_to_remove(nlp=nlp)
     umap_model = define_umap()
     hdbscan_model = define_hdbscan()
     vectorizer_model = define_vectorizer_tokenizer(nlp=nlp)
