@@ -24,13 +24,13 @@ role: str = variable_hyperparam['role']
 
 image_uri_inference: str = variable_hyperparam['image_uri_inference']
 
+model_data: str = variable_hyperparam['s3_model_path']
 
 model = Model(
     image_uri=image_uri_inference,
-    model_data="s3://sagemaker-us-east-1-513734873949/model-2024-07-10-16-55-21-398/output/model.tar.gz",
+    model_data=model_data,
     role=role,
     name='inference-model',
-    source_dir='../model_deploy_test',
     entry_point='inference.py',
     sagemaker_session=SAGEMAKER_SESSION
 )
