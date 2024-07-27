@@ -13,7 +13,7 @@ with open('../variable_hyperparam.json', 'r') as file:
 
 SESSION: str = boto3.Session(
     profile_name=variable_hyperparam['profile_name'], 
-    region_name=variable_hyperparam['us-east-1']
+    region_name=variable_hyperparam['aws_region']
 )
 
 RUNTIME_CLIENT: str = boto3.client('runtime.sagemaker')
