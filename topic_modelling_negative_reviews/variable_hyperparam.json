@@ -8,6 +8,7 @@
   "role": "arn:aws:iam::513734873949:role/service-role/AmazonSageMaker-ExecutionRole-20240209T185677",
   "image_uri_model": "513734873949.dkr.ecr.us-east-1.amazonaws.com/topic_modelling_reviews_model:latest",
   "image_uri_inference": "513734873949.dkr.ecr.us-east-1.amazonaws.com/topic_modelling_reviews_deploy:latest",
+  "s3_model_path": "s3://sagemaker-us-east-1-513734873949/model-2024-07-27-10-45-04-575/output/model.tar.gz",
   "aws_region": "us-east-1",
   "database": "amazon_reviews_db",
   "raw_table": "raw_dataset",
