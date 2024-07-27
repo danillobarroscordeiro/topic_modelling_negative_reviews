@@ -95,7 +95,7 @@ def define_hdbscan(
 
 
 def define_vectorizer_tokenizer(
-    nlp, ngram_range: tuple = variable_hyperparam['vectorizer_model']['ngram_range'], 
+    nlp, ngram_range: tuple = tuple(variable_hyperparam['vectorizer_model']['ngram_range']), 
     lowercase: bool = variable_hyperparam['vectorizer_model']['lowercase']
 ):
 
@@ -122,7 +122,7 @@ def train(
         df: pd.DataFrame, embedding_model, umap_model, hdbscan_model,
         vectorizer_model, representation_model, model_dir, 
         top_n_words: int = variable_hyperparam['top_n_words'],
-        nr_topics: str = 'auto', calculate_probabilities: bool = True,
+        calculate_probabilities: bool = True,
         language: str = 'english', review_column: str = 'title_text_review',
         embeddings_columns: str = 'embeddings',
         batch_size: int = variable_hyperparam['batch_size'],
@@ -142,7 +142,7 @@ def train(
             calculate_probabilities=calculate_probabilities,
             representation_model=representation_model,
             top_n_words=top_n_words,
-            nr_topics='auto'
+            nr_topics=30
         ).fit(df_batch[review_column], embeddings=np.array(df[embeddings_columns].to_list())[i:i+batch_size])
 
         topic_models.append(topic_model_i)
