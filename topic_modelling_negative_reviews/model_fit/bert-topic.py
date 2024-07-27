@@ -116,7 +116,7 @@ def _save_model(model, model_dir: str):
     logger.info("Saving the model.")
     path = os.path.join(model_dir, "my_model")
     
-    return model.save(path)
+    return model.save(path, serialization="pytorch")
 
 def train(
         df: pd.DataFrame, embedding_model, umap_model, hdbscan_model,
