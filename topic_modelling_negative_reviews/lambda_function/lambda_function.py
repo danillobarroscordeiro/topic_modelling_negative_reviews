@@ -9,20 +9,20 @@ import io
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-with open("variable_hyperparam.json", 'r') as file:
+with open("../variable_hyperparam.json", 'r') as file:
     variable_hyperparam = json.load(file)
 
-sm_client = boto3.client("sagemaker-runtime", region_name=variable_hyperparam['region_name'])
+sm_client = boto3.client("sagemaker-runtime", region_name=variable_hyperparam['aws_region'])
 
 
-#ENDPOINT_NAME = "topic-modelling-reviews-endpoint-test"
+#ENDPOINT_NAME = "topic-modelling-reviews-endpoint"
 
 class DatabaseQuery:
     def __init__(
         self, database: str = variable_hyperparam['database'], 
         preprocessed_review_table: str = variable_hyperparam['preprocessed_review_table'],
         products_metadata_table: str = variable_hyperparam['products_metadata'],
-        region_name: str = variable_hyperparam['region_name']
+        region_name: str = variable_hyperparam['aws_region']
 ):
         self.database = database
         self.preprocessed_review_table = preprocessed_review_table
