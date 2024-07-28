@@ -5,11 +5,13 @@ import json
 import logging
 import numpy as np
 import io
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-with open("../variable_hyperparam.json", 'r') as file:
+with open("variable_hyperparam.json", 'r') as file:
     variable_hyperparam = json.load(file)
 
 sm_client = boto3.client("sagemaker-runtime", region_name=variable_hyperparam['aws_region'])
@@ -21,7 +23,7 @@ class DatabaseQuery:
     def __init__(
         self, database: str = variable_hyperparam['database'], 
         preprocessed_review_table: str = variable_hyperparam['preprocessed_review_table'],
-        products_metadata_table: str = variable_hyperparam['products_metadata'],
+        products_metadata_table: str = variable_hyperparam['products_metadata_table'],
         region_name: str = variable_hyperparam['aws_region']
 ):
         self.database = database
@@ -57,10 +59,10 @@ def calc_mean_embedding(embeddings: np.ndarray) -> np.ndarray:
         return np.mean(embeddings, axis=0)
 
 
-def get_representative_docs(df: pd.Dataframe, column: str = 'embeddings', response: json) -> np.array:
+def get_representative_docs(df: pd.Dataframe, column: str = 'embeddings', response: json = {}) -> np.array:
     topic_embeddings = response['topic_embeddings']
     embedding_similarity_lst = []
-    for i in teste[column]:
+    for i in df[column]:
         embedding_similarity = cosine_similarity([i], topic_embeddings)
         embedding_similarity_lst.append(embedding_similarity)
 
@@ -69,6 +71,7 @@ def get_representative_docs(df: pd.Dataframe, column: str = 'embeddings', respon
     return df['title_text_review'].tolist()[:3]
 
 def handler(event, context):
+
     try:
 
         product_id = json.loads(event['body'])['product_id']
@@ -101,8 +104,8 @@ def handler(event, context):
             }
 
 
-    response = json.loads(response['Body'].read().decode())
-    representative_docs = get_representative_docs(df=df, response=response)
+        response = json.loads(response['Body'].read().decode())
+        representative_docs = get_representative_docs(df=df, response=response)
         output_data = {
             'output_data': {
                 'topic_words': response['topic_words'],
