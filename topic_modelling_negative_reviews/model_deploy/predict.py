@@ -30,7 +30,8 @@ model = Model(
     image_uri=image_uri_inference,
     model_data=model_data,
     role=role,
-    name='inference-model',
+    name='inference-model-3',
+    source_dir='../model_deploy',
     entry_point='inference.py',
     sagemaker_session=SAGEMAKER_SESSION
 )
@@ -38,5 +39,6 @@ model = Model(
 predictor = model.deploy(
     initial_instance_count=1,
     instance_type="ml.c5.large",
-    endpoint_name="topic-modelling-reviews-endpoint-test"
+    endpoint_name="topic-modelling-reviews-endpoint-3"
 )
+
