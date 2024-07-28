@@ -9,24 +9,26 @@ import io
 import logging
 import json
 
-with open('variable_hyperparam.json', 'r') as file:
+with open('/opt/ml/code/variable_hyperparam.json', 'r') as file:
     variable_hyperparam = json.load(file)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def model_fn(model_dir):
-    try:
 
+def model_fn(model_dir):
+
+    try:
+        logger.info(f"inside model_fn, model_dir: {model_dir}")
+        logger.info(f"check model_dir: {os.listdir(model_dir)}")
         # Load the SentenceTransformer model from the local directory
         embedding_model_path = variable_hyperparam['embedding_model_path']
 
         if not os.path.exists(embedding_model_path):
             raise ValueError(f"Model path does not exist: {embedding_model_path}")
-    
 
         embedding_model = SentenceTransformer(embedding_model_path)
-        model = BERTopic.load(model_dir, embedding_model=embedding_model)
+        model = BERTopic.load(model_dir)
         model.embedding_model = embedding_model
         topic_embeddings = model.topic_embeddings_
         logger.info("Model loaded successfully.")
