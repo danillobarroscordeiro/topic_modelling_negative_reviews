@@ -45,6 +45,7 @@ def input_fn(input_data, content_type):
             buffer = io.BytesIO(input_data)
             embeddings = np.load(buffer, allow_pickle=True)
             logger.info(f"embeddings processed successfully: {embeddings}")
+            logger.info(f"embeddings shape: {embeddings.shape}")
 
             return {'embeddings': embeddings}
 
@@ -54,7 +55,8 @@ def input_fn(input_data, content_type):
 def predict_closest_topic(first_embeddings, topic_embeddings):
 
     try:
-        similarities = cosine_similarity([first_embeddings], topic_embeddings)
+        logger.info(f"embeddings shape: {first_embeddings.shape}")
+        similarities = cosine_similarity(first_embeddings, topic_embeddings)
         predicted_topic = np.argmax(similarities)
         print(predicted_topic)
 
@@ -89,7 +91,7 @@ def predict_fn(data, model):
 
         predicted_topic = predict_closest_topic(embeddings, topic_embeddings)
         topic_words = get_words_from_topics(topic_model=model, predicted_topic=predicted_topic)
-        topic_embeddings = model.topic_embeddings_[predicted_topic]
+        topic_embeddings = model.topic_embeddings_[predicted_topic].tolist()
         prediction = {'topic_words': topic_words, 'topic_embeddings': topic_embeddings}
         logger.info(f'prediction value: {topic_words}')
         logger.info(f'topic_embedding value: {topic_embeddings}')
