@@ -4,7 +4,7 @@ COPY lambda_function/requirements.txt ${LAMBDA_TASK_ROOT}
 
 RUN pip install -r requirements.txt
 
-COPY lambda_function.py ${LAMBDA_TASK_ROOT}
+COPY lambda_function/lambda_function.py ${LAMBDA_TASK_ROOT}
 
 COPY variable_hyperparam.json ${LAMBDA_TASK_ROOT}
 
