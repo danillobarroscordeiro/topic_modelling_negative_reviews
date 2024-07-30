@@ -17,8 +17,6 @@ with open("variable_hyperparam.json", 'r') as file:
 sm_client = boto3.client("sagemaker-runtime", region_name=variable_hyperparam['aws_region'])
 
 
-#ENDPOINT_NAME = "topic-modelling-reviews-endpoint"
-
 class DatabaseQuery:
     def __init__(
         self, database: str = variable_hyperparam['database'], 
@@ -32,38 +30,45 @@ class DatabaseQuery:
         self.session = boto3.Session(region_name=region_name)
 
 
-    def retrieve_data(self, product_id: str) -> pd.DataFrame:
-        query = f"select t1.*, t2.title \
-        from {self.database}.{self.preprocessed_review_table} t1 inner join \
-        {self.database}.{self.products_metadata_table} t2 on t1.parent_asin = t2.parent_asin  \
+    # def retrieve_data(self, product_id: str) -> pd.DataFrame:
+    #     query = f"select t1.*, t2.title \
+    #     from {self.database}.{self.preprocessed_review_table} t1 inner join \
+    #     {self.database}.{self.products_metadata_table} t2 on t1.parent_asin = t2.parent_asin  \
+    #     where t1.parent_asin = '{product_id}';"
+    #     df = athena.read_sql_query(sql=query, database=self.database, boto3_session=self.session)
+    #     return df
+
+    def retrieve_preprocessed_reviews(self, product_id: str) -> pd.DataFrame:
+        query = f"select t1.* \
+        from {self.database}.{self.preprocessed_review_table} t1 \
         where t1.parent_asin = '{product_id}';"
-        df = athena.read_sql_query(sql=query, database=self.database, boto3_session=self.session)
-        return df
+        df_preprocessed_reviews = athena.read_sql_query(sql=query, database=self.database, boto3_session=self.session)
+        return df_preprocessed_reviews
 
+    def retrieve_product_metadata(self, product_id: str) -> pd.DataFrame:
+        query = f"select t2.parent_asin, t2.title \
+        from {self.database}.{self.products_metadata_table} t2 \
+        where t2.parent_asin = '{product_id}';"
+        df_product_metadata = athena.read_sql_query(sql=query, database=self.database, boto3_session=self.session)
+        return df_product_metadata
 
-# def retrieve_data_athena(
-#     database=DATABASE, product_id=None, table=PREPROCESSED_REVIEWS_TABLE, boto3_session=SESSION
-# ):
-
-#     QUERY= f"select * \
-#     from {DATABASE}.{PREPROCESSED_REVIEWS_TABLE} \
-#     where parent_asin = '{product_id}';"
-
-#     df = athena.read_sql_query(sql=QUERY, database=database, boto3_session=boto3_session)
-#     return df
 
 def calc_mean_embedding(embeddings: np.ndarray) -> np.ndarray:
-    if embeddings.ndim == 1:
+    embeddings = np.atleast_2d(embeddings)
+    if embeddings.shape[0] == 1:
         return embeddings
     else:
-        return np.mean(embeddings, axis=0)
+        return np.mean(embeddings, axis=0, keepdims=True)
 
-
-def get_representative_docs(df: pd.Dataframe, column: str = 'embeddings', response: json = {}) -> np.array:
-    topic_embeddings = response['topic_embeddings']
+def get_representative_docs(df: pd.DataFrame, column: str = 'embeddings', response: json = {}) -> np.array:
+    topic_embeddings = np.array(response['topic_embeddings'])
+    logger.info(f"shape topic_embeddings before converting to 2D: {topic_embeddings.shape}")
+    topic_embeddings = np.atleast_2d(topic_embeddings)
+    logger.info(f"shape topic_embeddings after converting to 2D: {topic_embeddings.shape}")
     embedding_similarity_lst = []
     for i in df[column]:
-        embedding_similarity = cosine_similarity([i], topic_embeddings)
+        embedding = np.atleast_2d(i)
+        embedding_similarity = np.max(cosine_similarity(embedding, topic_embeddings))
         embedding_similarity_lst.append(embedding_similarity)
 
     df['embedding_similarity'] = embedding_similarity_lst
@@ -73,19 +78,25 @@ def get_representative_docs(df: pd.Dataframe, column: str = 'embeddings', respon
 def handler(event, context):
 
     try:
-
         product_id = json.loads(event['body'])['product_id']
         logger.info(f'product_id: {product_id}')
-        
+
         db_conn = DatabaseQuery()
 
-        df = db_conn.retrieve_data(product_id=product_id)
+        #df = db_conn.retrieve_data(product_id=product_id)
+        df_preprocessed_reviews = db_conn.retrieve_preprocessed_reviews(product_id=product_id)
+        df_product_metadata = db_conn.retrieve_product_metadata(product_id=product_id)
+        logger.info(f"preprocessed dataframe retrieved: {df_preprocessed_reviews.shape} {df_preprocessed_reviews.columns}")
+        logger.info(f"metadata dataframe retrieved: {df_product_metadata.shape} {df_product_metadata.columns}")
+        df = pd.merge(df_preprocessed_reviews, df_product_metadata, on='parent_asin')
+        logger.info(f"merged dataframe: {df.shape} {df.columns}")
         product_name = df['title'].values[0]
 
         embeddings = np.stack(df['embeddings'].values)
         logger.info(f'shape embeddings: {embeddings.shape}')
 
         mean_embeddings = calc_mean_embedding(embeddings)
+        logger.info(f"mean embeddings done successfully: {mean_embeddings.shape}")
 
         input_data = io.BytesIO()
         np.save(input_data, mean_embeddings, allow_pickle=True)
@@ -106,11 +117,12 @@ def handler(event, context):
 
         response = json.loads(response['Body'].read().decode())
         representative_docs = get_representative_docs(df=df, response=response)
+        logger.info(f"response from the model: f{response}")
         output_data = {
             'output_data': {
                 'topic_words': response['topic_words'],
                 'product_name': product_name,
-                'topic_embeddings': representative_docs
+                'representative_docs': representative_docs
             }
         }
 
