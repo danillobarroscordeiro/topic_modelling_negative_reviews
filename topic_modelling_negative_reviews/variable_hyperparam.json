@@ -1,6 +1,6 @@
 {
   "profile_name": "dbcordeiro_projects",
-  "lambda_endpoint": "https://dk5nrp46w2af4blzrctvyuqvfe0lgmhz.lambda-url.us-east-1.on.aws/",
+  "lambda_endpoint": "https://tzmtpks6fzqalzbu2crkiiojte0ajgyv.lambda-url.us-east-1.on.aws/",
   "inference_endpoint": "topic-modelling-reviews-endpoint-3",
   "s3_bucket": "s3://topic-modelling-reviews",
   "s3_data_preprocessed_path": "s3://topic-modelling-reviews/data/preprocessed_reviews",
